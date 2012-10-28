@@ -2,7 +2,7 @@
 
 Given /the following movies exist/ do |movies_table|
   movies_table.hashes.each do |movie|
-    Movie.create!(movie)
+    Movie.create(movie)
   end
 end
 
@@ -20,7 +20,20 @@ end
 #  "When I check the following ratings: G"
 
 When /I (un)?check the following ratings: (.*)/ do |uncheck, rating_list|
-  # HINT: use String#split to split up the rating_list, then
-  #   iterate over the ratings and reuse the "When I check..." or
-  #   "When I uncheck..." steps in lines 89-95 of web_steps.rb
+  ratings = rating_list.split(', ')
+  ratings.each do |rating|
+    if !uncheck
+      steps %Q{
+        When I check "ratings_#{rating}"
+      }
+    else
+      steps %Q{
+        When I uncheck "ratings_#{rating}"
+      }
+    end
+  end
+end
+
+Then /I should see all of the movies/ do
+  assert page.all("table#movies tbody tr").count == Movie.count
 end
